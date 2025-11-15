@@ -13,7 +13,7 @@ let markers = [];
 // ✅ Use LocationIQ instead of Nominatim
 const LOCATIONIQ_KEY = "pk.74d567f0033e3ca2d505cfc38205bedf"; // ← Replace with your key
 
-async function getCoordinates(place) {
+/*async function getCoordinates(place) {
   const url = `https://us1.locationiq.com/v1/search?key=${LOCATIONIQ_KEY}&q=${encodeURIComponent(
     place
   )}&format=json`;
@@ -32,7 +32,23 @@ async function getCoordinates(place) {
     alert("⚠️ Network or API error. Check your internet or API key.");
     return null;
   }
+}*/
+async function getCoordinates(place) {
+  const url = `https://api.locationiq.com/v1/search?key=${LOCATIONIQ_KEY}&q=${encodeURIComponent(place)}&format=json`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data || data.error || data.length === 0) {
+      alert(`❌ Location not found: ${place}`);
+      return null;
+    }
+    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+  } catch (error) {
+    alert("⚠️ API or network error.");
+    return null;
+  }
 }
+
 
 // Draw straight line between start and end
 async function drawLine(startName, endName) {
@@ -81,3 +97,4 @@ document.getElementById("routeBtn").addEventListener("click", () => {
 
   drawLine(start, end);
 });
+
