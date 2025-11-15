@@ -10,28 +10,17 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 let lineLayer = null;
 let markers = [];
 
-// ✅ Use LocationIQ instead of Nominatim
-const LOCATIONIQ_KEY = "pk.154f639ebae47c4cf2f46ff512fd5c09"; // ← Replace with your key
-
+// Convert text place → coordinates
 async function getCoordinates(place) {
-  const url = `https://us1.locationiq.com/v1/search?key=${LOCATIONIQ_KEY}&q=${encodeURIComponent(
-    place
-  )}&format=json`;
-
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
-
-    if (!data || data.error) {
-      alert(`❌ Location not found: ${place}`);
-      return null;
-    }
-
-    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-  } catch (error) {
-    alert("⚠️ Network or API error. Check your internet or API key.");
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`
+  );
+  const data = await res.json();
+  if (data.length === 0) {
+    alert(`❌ Location not found: ${place}`);
     return null;
   }
+  return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
 }
 
 // Draw straight line between start and end
@@ -43,19 +32,12 @@ async function drawLine(startName, endName) {
 
   // Remove existing line & markers
   if (lineLayer) map.removeLayer(lineLayer);
-  markers.forEach((m) => map.removeLayer(m));
+  markers.forEach(m => map.removeLayer(m));
   markers = [];
 
   // Add markers
-  const startMarker = L.marker(startCoords)
-    .addTo(map)
-    .bindPopup("Start")
-    .openPopup();
-
-  const endMarker = L.marker(endCoords)
-    .addTo(map)
-    .bindPopup("Destination");
-
+  const startMarker = L.marker(startCoords).addTo(map).bindPopup("Start").openPopup();
+  const endMarker = L.marker(endCoords).addTo(map).bindPopup("Destination");
   markers.push(startMarker, endMarker);
 
   // Draw straight line
